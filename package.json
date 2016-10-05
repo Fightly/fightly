@@ -2,7 +2,7 @@
   "name": "fightly",
   "version": "0.0.1",
   "description": "Fightly Game Engine",
-  "main": "lib/fightly.js",
+  "main": "src/fightly.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
