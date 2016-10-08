@@ -6,12 +6,6 @@ const Player = {
     state: {},
 };
 
-class TurnProcessor {
-    update(dt) {
-        console.log('TurnProcessor.update()');
-    }
-}
-
 const CORE = {
     actions: [
         'createGame',
@@ -21,9 +15,7 @@ const CORE = {
     components: [
         Player,
     ],
-    processors: [
-        TurnProcessor,
-    ],
+    processors: [],
 };
 
 module.exports = CORE;

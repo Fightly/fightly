@@ -1,9 +1,11 @@
 var Engine = require('./engine');
 var Network = require('./network');
+var Actions = require('./actions');
 
 
 function createApplication() {
-    var engine = new Engine();
+    var actions = new Actions();
+    var engine = new Engine(actions);
     var network = new Network(engine);
 
     // Expose the Express app from the network module.

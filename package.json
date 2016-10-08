@@ -9,7 +9,7 @@
   "author": "Adrian Gaudebert",
   "license": "MIT",
   "dependencies": {
-    "ensy": "^1.2.0",
+    "ensy": "^1.2.1",
     "express": "^4.14.0",
     "node-uuid": "^1.4.7",
     "socket.io": "^1.4.8"

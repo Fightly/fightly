@@ -5,21 +5,22 @@ var EventEmitter = require('events');
 var path = require('path');
 var uuid = require('node-uuid');
 
-var Game = require('./game');
-var core = require('./core/module');
+var Room = require('./room');
 
 
 const MODULE_PATH = './modules';
 
 class Engine extends EventEmitter {
-    constructor() {
+    constructor(actions) {
         super();
+
+        this.actions = actions;
 
         // An array of connected network clients.
         this._clients = [];
 
-        // An array of games.
-        this._games = [];
+        // An array of rooms.
+        this._rooms = [];
 
         this._components = [];
         this._processors = [];
@@ -27,7 +28,6 @@ class Engine extends EventEmitter {
 
         this._modules = [];
         this._modules_dir = MODULE_PATH;
-        this.loadModule('core', core);
 
         this._setEventListeners();
     }
@@ -35,32 +35,41 @@ class Engine extends EventEmitter {
     _setEventListeners() {
         this.on('request', (request) => {
             console.log('data requested');
-            switch (request.data.type) {
+            switch (request.content.type) {
                 case 'modules':
                     console.log('engine, asked for modules');
                     request.client.emit('data', { type: 'modules', data: this._modules });
                     break;
                 case 'games':
                     console.log('engine, asked for games');
-                    request.client.emit('data', { type: 'games', data: this._games });
+                    request.client.emit('data', { type: 'games', data: this._rooms });
                     break;
             }
         });
 
-        this.on('action', (action) => {
+        this.on('action', action => {
+            let actionMeta = {
+                type: action.content.type,
+                params: action.content.params,
+                context: {
+                    room: null,
+                    client: action.client,
+                },
+            };
             console.log('engine, action received');
-            switch (action.data.type) {
-                case 'createGame':
+            switch (action.content.type) {
+                case 'core.createGame':
                     var game = this.createGame();
                     game.addClient(action.client);
                     action.client.emit('gameJoined', { game });
                     break;
-                case 'joinGame':
-                    console.log(action.data.game)
-                    var game = this.getGame(action.data.game);
-                    console.log(game);
+                case 'core.joinGame':
+                    var game = this.getGame(action.content.game);
                     game.addClient(action.client);
                     action.client.emit('gameJoined', { game });
+                    break;
+                default:
+                    this.actions.execute(actionMeta);
                     break;
             }
         })
@@ -77,23 +86,23 @@ class Engine extends EventEmitter {
 
         this._modules.push(name);
 
-        console.log(module);
-        this._actions.push(...module.actions);
         this._components.push(...module.components);
-        this._processors.push(...module.processors);
+        Object.keys(module.actions).forEach(key => {
+            this.actions.add(name, key, module.actions[key]);
+        });
     }
 
     createGame() {
         console.log('Create new game');
-        let newGame = new Game(uuid.v4());
-        this._games.push(newGame);
+        let newGame = new Room(uuid.v4());
+        this._rooms.push(newGame);
 
-        this.network.emitAll('games', this._games);
+        this.network.emitAll('games', this._rooms);
         return newGame;
     }
 
     getGame(id) {
-        return this._games.filter(game => {
+        return this._rooms.filter(game => {
             return game.id === id;
         })[0];
     }

@@ -31,14 +31,14 @@ class Client {
 
     onAction(data) {
         console.log('Action');
-        data = JSON.parse(data);
-        this.listener.emit('action', { data, client: this });
+        let content = JSON.parse(data);
+        this.listener.emit('action', { content, client: this });
     }
 
     onDataRequest(data) {
         console.log('Client is asking for data');
-        data = JSON.parse(data);
-        this.listener.emit('request', { data, client: this });
+        let content = JSON.parse(data);
+        this.listener.emit('request', { content, client: this });
     }
 
     onDisconnect() {
